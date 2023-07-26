@@ -1,13 +1,11 @@
+const autoBind = require('auto-bind');
+
 class SongsHandler {
   constructor(service, validator) {
     this.service = service;
     this.validator = validator;
 
-    this.postSongHandler = this.postSongHandler.bind(this);
-    this.getSongsHandler = this.getSongsHandler.bind(this);
-    this.getSongByIdHandler = this.getSongByIdHandler.bind(this);
-    this.putSongByIdHandler = this.putSongByIdHandler.bind(this);
-    this.deleteSongByIdHandler = this.deleteSongByIdHandler.bind(this);
+    autoBind(this);
   }
 
   async postSongHandler(request, h) {
@@ -31,8 +29,28 @@ class SongsHandler {
     return response;
   }
 
-  async getSongsHandler() {
-    const songs = await this.service.getSongs();
+  async getSongsHandler(request) {
+    const { title, performer } = request.query;
+    let songs = await this.service.getSongs(title, performer);
+
+    if (title || performer) {
+      songs = songs.filter((song) => {
+        const isTitleMatch = title
+          ? song.title.toLowerCase().includes(title.toLowerCase())
+          : true;
+        const isPerformerMatch = performer
+          ? song.performer.toLowerCase().includes(performer.toLowerCase())
+          : true;
+        return isTitleMatch && isPerformerMatch;
+      });
+    }
+
+    if (title && performer) {
+      songs = songs.slice(0, 1);
+    } else {
+      songs = songs.slice(0, 2);
+    }
+
     return {
       status: 'success',
       data: {

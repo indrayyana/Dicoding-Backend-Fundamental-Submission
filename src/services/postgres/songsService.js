@@ -1,10 +1,10 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/invariantError');
-const { mapSongToModel, mapSongsToModel } = require('../../utils');
+const { mapDBToModel } = require('../../utils');
 const NotFoundError = require('../../exceptions/notFoundError');
 
-class songsService {
+class SongsService {
   constructor() {
     this.pool = new Pool();
   }
@@ -12,7 +12,7 @@ class songsService {
   async addSong({
     title, year, genre, performer, duration, albumId,
   }) {
-    const id = nanoid(16);
+    const id = `song-${nanoid(16)}`;
 
     const query = {
       text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id',
@@ -28,9 +28,24 @@ class songsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
-    const result = await this.pool.query('SELECT * FROM songs');
-    return result.rows.map(mapSongsToModel);
+  async getSongs(title, performer) {
+    const query = {
+      text: 'SELECT id, title, performer FROM songs WHERE LOWER(title) LIKE $1 OR LOWER(performer) LIKE $2',
+      values: [`%${title ? title.toLowerCase() : ''}%`, `%${performer ? performer.toLowerCase() : ''}%`],
+    };
+    const result = await this.pool.query(query);
+
+    return result.rows.map(mapDBToModel);
+  }
+
+  async getSongsByAlbumId(id) {
+    const query = {
+      text: 'SELECT * FROM songs WHERE album_id = $1',
+      values: [id],
+    };
+    const result = await this.pool.query(query);
+
+    return result.rows.map(mapDBToModel);
   }
 
   async getSongById(id) {
@@ -44,7 +59,7 @@ class songsService {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
 
-    return result.rows.map(mapSongToModel)[0];
+    return result.rows.map(mapDBToModel)[0];
   }
 
   async editSongById(id, {
@@ -76,4 +91,4 @@ class songsService {
   }
 }
 
-module.exports = songsService;
+module.exports = SongsService;

@@ -1,19 +1,18 @@
+const autoBind = require('auto-bind');
+const SongsService = require('../../services/postgres/songsService');
+
 class AlbumsHandler {
   constructor(service, validator) {
     this.service = service;
     this.validator = validator;
+    this.songService = new SongsService();
 
-    this.postAlbumHandler = this.postAlbumHandler.bind(this);
-    this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
-    this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
-    this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
+    autoBind(this);
   }
 
   async postAlbumHandler(request, h) {
     this.validator.validateAlbumPayload(request.payload);
-    const { name, year } = request.payload;
-
-    const albumId = await this.service.addAlbum({ name, year });
+    const albumId = await this.service.addAlbum(request.payload);
 
     const response = h.response({
       status: 'success',
@@ -29,6 +28,11 @@ class AlbumsHandler {
   async getAlbumByIdHandler(request) {
     const { id } = request.params;
     const album = await this.service.getAlbumById(id);
+    const songs = await this.songService.getSongsByAlbumId(id);
+
+    // Gabungkan data album dan data lagu
+    album.songs = songs;
+
     return {
       status: 'success',
       data: {
