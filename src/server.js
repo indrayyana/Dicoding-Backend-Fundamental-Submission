@@ -59,11 +59,10 @@ const init = async () => {
         return h.continue;
       }
       // penanganan server error sesuai kebutuhan
-      const error = response;
       const newResponse = h.response({
         status: 'error',
         message: 'terjadi kegagalan pada server kami',
-        error: error.message,
+        // error: response.message, // menampilkan pesan error
       });
       newResponse.code(500);
       return newResponse;
