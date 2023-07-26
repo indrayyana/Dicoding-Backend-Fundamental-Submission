@@ -12,7 +12,7 @@ class AlbumsService {
     const id = nanoid(16);
 
     const query = {
-      text: 'INSERT INTO albums VALUES($1, $2, $3, $4) RETURNING id',
+      text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
       values: [id, name, year],
     };
 
@@ -41,7 +41,7 @@ class AlbumsService {
 
   async editAlbumById(id, { name, year }) {
     const query = {
-      text: 'UPDATE albums SET  $1, name = $2, year = $3 WHERE id = $4 RETURNING id',
+      text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id],
     };
 
