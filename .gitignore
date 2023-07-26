@@ -1,0 +1,5 @@
+node_modules/
+notes-api-webserver.pem 
+package-lock.json
+.env
+.prod.env
