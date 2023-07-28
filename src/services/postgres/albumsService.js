@@ -5,7 +5,7 @@ const NotFoundError = require('../../exceptions/notFoundError');
 
 class AlbumsService {
   constructor() {
-    this.pool = new Pool();
+    this._pool = new Pool();
   }
 
   async addAlbum({ name, year }) {
@@ -16,7 +16,7 @@ class AlbumsService {
       values: [id, name, year],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
       throw new InvariantError('album gagal ditambahkan');
@@ -31,7 +31,7 @@ class AlbumsService {
       values: [id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('album tidak ditemukan');
@@ -46,7 +46,7 @@ class AlbumsService {
       values: [name, year, id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
@@ -59,7 +59,7 @@ class AlbumsService {
       values: [id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('album gagal dihapus. Id tidak ditemukan');

@@ -6,7 +6,7 @@ const NotFoundError = require('../../exceptions/notFoundError');
 
 class SongsService {
   constructor() {
-    this.pool = new Pool();
+    this._pool = new Pool();
   }
 
   async addSong({
@@ -19,7 +19,7 @@ class SongsService {
       values: [id, title, year, genre, performer, duration, albumId],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
       throw new InvariantError('Lagu gagal ditambahkan');
@@ -33,7 +33,7 @@ class SongsService {
       text: 'SELECT id, title, performer FROM songs WHERE LOWER(title) LIKE $1 OR LOWER(performer) LIKE $2',
       values: [`%${title ? title.toLowerCase() : ''}%`, `%${performer ? performer.toLowerCase() : ''}%`],
     };
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     return result.rows.map(mapDBToModel);
   }
@@ -43,7 +43,7 @@ class SongsService {
       text: 'SELECT * FROM songs WHERE album_id = $1',
       values: [id],
     };
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     return result.rows.map(mapDBToModel);
   }
@@ -53,7 +53,7 @@ class SongsService {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id],
     };
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('Lagu tidak ditemukan');
@@ -70,7 +70,7 @@ class SongsService {
       values: [title, year, genre, performer, duration, albumId, id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
@@ -83,7 +83,7 @@ class SongsService {
       values: [id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
