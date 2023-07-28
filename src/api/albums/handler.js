@@ -3,16 +3,16 @@ const SongsService = require('../../services/postgres/songsService');
 
 class AlbumsHandler {
   constructor(service, validator) {
-    this.service = service;
-    this.validator = validator;
+    this._service = service;
+    this._validator = validator;
     this.songService = new SongsService();
 
     autoBind(this);
   }
 
   async postAlbumHandler(request, h) {
-    this.validator.validateAlbumPayload(request.payload);
-    const albumId = await this.service.addAlbum(request.payload);
+    this._validator.validateAlbumPayload(request.payload);
+    const albumId = await this._service.addAlbum(request.payload);
 
     const response = h.response({
       status: 'success',
@@ -27,7 +27,7 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request) {
     const { id } = request.params;
-    const album = await this.service.getAlbumById(id);
+    const album = await this._service.getAlbumById(id);
     const songs = await this.songService.getSongsByAlbumId(id);
 
     // Gabungkan data album dan data lagu
@@ -42,10 +42,10 @@ class AlbumsHandler {
   }
 
   async putAlbumByIdHandler(request) {
-    this.validator.validateAlbumPayload(request.payload);
+    this._validator.validateAlbumPayload(request.payload);
     const { id } = request.params;
 
-    await this.service.editAlbumById(id, request.payload);
+    await this._service.editAlbumById(id, request.payload);
 
     return {
       status: 'success',
@@ -55,7 +55,7 @@ class AlbumsHandler {
 
   async deleteAlbumByIdHandler(request) {
     const { id } = request.params;
-    await this.service.deleteAlbumById(id);
+    await this._service.deleteAlbumById(id);
     return {
       status: 'success',
       message: 'Album berhasil dihapus',
