@@ -2,17 +2,35 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const AlbumsService = require('./services/postgres/albumsService');
-const SongsService = require('./services/postgres/songsService');
-const AlbumsValidator = require('./validator/albums');
-const SongsValidator = require('./validator/songs');
+const Jwt = require('@hapi/jwt');
+
+// albums
 const albums = require('./api/albums');
+const AlbumsService = require('./services/postgres/albumsService');
+const AlbumsValidator = require('./validator/albums');
+
+// songs
 const songs = require('./api/songs');
+const SongsService = require('./services/postgres/songsService');
+const SongsValidator = require('./validator/songs');
 const ClientError = require('./exceptions/clientError');
+
+// users
+const users = require('./api/users');
+const UsersService = require('./services/postgres/usersService');
+const UsersValidator = require('./validator/users');
+
+// authentications
+const authentications = require('./api/authentications');
+const AuthenticationsService = require('./services/postgres/authenticationsService');
+const AuthenticationsValidator = require('./validator/authentications');
+const TokenManager = require('./tokenize/tokenManager');
 
 const init = async () => {
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
+  const usersService = new UsersService();
+  const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
     host: process.env.HOST,
@@ -22,6 +40,30 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  // registrasi plugin eksternal
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  // mendefinisikan strategy autentikasi jwt
+  server.auth.strategy('openmusicapp_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
   });
 
   await server.register([
@@ -39,6 +81,22 @@ const init = async () => {
         validator: SongsValidator,
       },
     },
+    {
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: UsersValidator,
+      },
+    },
+    {
+      plugin: authentications,
+      options: {
+        authenticationsService,
+        usersService,
+        tokenManager: TokenManager,
+        validator: AuthenticationsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -54,10 +112,12 @@ const init = async () => {
         newResponse.code(response.statusCode);
         return newResponse;
       }
+
       // mempertahankan penanganan client error oleh hapi secara native, seperti 404, etc.
       if (!response.isServer) {
         return h.continue;
       }
+
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
         status: 'error',

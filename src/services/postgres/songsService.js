@@ -30,8 +30,8 @@ class SongsService {
 
   async getSongs(title, performer) {
     const query = {
-      text: 'SELECT id, title, performer FROM songs WHERE LOWER(title) LIKE $1 OR LOWER(performer) LIKE $2',
-      values: [`%${title ? title.toLowerCase() : ''}%`, `%${performer ? performer.toLowerCase() : ''}%`],
+      text: 'SELECT id, title, performer FROM songs WHERE title LIKE $1 OR performer LIKE $2',
+      values: [`%${title}%`, `%${performer}%`],
     };
     const result = await this._pool.query(query);
 
