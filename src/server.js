@@ -20,16 +20,28 @@ const users = require('./api/users');
 const UsersService = require('./services/postgres/usersService');
 const UsersValidator = require('./validator/users');
 
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgres/playlistsService');
+const PlaylistsValidator = require('./validator/playlists');
+
 // authentications
 const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/postgres/authenticationsService');
 const AuthenticationsValidator = require('./validator/authentications');
 const TokenManager = require('./tokenize/tokenManager');
 
+// collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationsService = require('./services/postgres/collaborationsService');
+const CollaborationsValidator = require('./validator/collaborations');
+
 const init = async () => {
+  const collaborationsService = new CollaborationsService();
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
+  const playlistsService = new PlaylistsService();
   const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
@@ -89,12 +101,29 @@ const init = async () => {
       },
     },
     {
+      plugin: playlists,
+      options: {
+        playlistsService,
+        songsService,
+        validator: PlaylistsValidator,
+      },
+    },
+    {
       plugin: authentications,
       options: {
         authenticationsService,
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        playlistsService,
+        usersService,
+        validator: CollaborationsValidator,
       },
     },
   ]);
@@ -122,7 +151,7 @@ const init = async () => {
       const newResponse = h.response({
         status: 'error',
         message: 'terjadi kegagalan pada server kami',
-        // error: response.message, // menampilkan pesan error
+        error: response.message, // menampilkan pesan error
       });
       newResponse.code(500);
       return newResponse;
