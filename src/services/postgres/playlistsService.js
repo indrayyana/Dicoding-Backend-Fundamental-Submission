@@ -170,7 +170,7 @@ class PlaylistsService {
     }
   }
 
-  async verifyPlaylistOwner(id, owner) {
+  async verifyPlaylistOwner(id, userId) {
     const query = {
       text: 'SELECT * FROM playlists WHERE id = $1',
       values: [id],
@@ -184,7 +184,7 @@ class PlaylistsService {
 
     const playlist = result.rows[0];
 
-    if (playlist.owner !== owner) {
+    if (playlist.owner !== userId) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
   }
@@ -196,8 +196,9 @@ class PlaylistsService {
       if (error instanceof NotFoundError) {
         throw error;
       }
+
       try {
-        await this._collaborationService.verifyCollaborator(playlistId, userId);
+        await this._collaborationsService.verifyCollaborator(playlistId, userId);
       } catch {
         throw error;
       }
