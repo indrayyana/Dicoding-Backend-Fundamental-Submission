@@ -1,7 +1,6 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/invariantError');
-const { mapPlaylistsToModel } = require('../../utils');
 const NotFoundError = require('../../exceptions/notFoundError');
 const AuthorizationError = require('../../exceptions/authorizationError');
 
@@ -21,7 +20,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new InvariantError('Playlist gagal ditambahkan');
     }
 
@@ -35,7 +34,7 @@ class PlaylistsService {
     };
     const result = await this._pool.query(query);
 
-    return result.rows.map(mapPlaylistsToModel);
+    return result.rows;
   }
 
   async getPlaylistById(playlistId) {
@@ -46,7 +45,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
@@ -61,7 +60,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
   }
@@ -75,7 +74,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new InvariantError('Musik gagal ditambahkan kedalam playlist');
     }
   }
@@ -94,7 +93,7 @@ class PlaylistsService {
 
     const playlistResult = await this._pool.query(queryGetPlaylist);
 
-    if (!playlistResult.rows.length) {
+    if (!playlistResult.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
@@ -129,7 +128,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new InvariantError('Musik gagal dihapus dari playlist');
     }
   }
@@ -165,7 +164,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new InvariantError('Gagal menambahkan activity');
     }
   }
@@ -178,7 +177,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
