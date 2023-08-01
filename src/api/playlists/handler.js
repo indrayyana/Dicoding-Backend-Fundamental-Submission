@@ -59,10 +59,11 @@ class PlaylistsHandler {
     this._validator.validateSongPlaylistPayload(request.payload);
 
     const { songId } = request.payload;
+    await this._songsService.getSongById(songId);
+
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
-    await this._songsService.getSongById(songId);
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     await this._playlistsService.addSongToPlaylist(playlistId, songId);
     await this._playlistsService.addActivity(playlistId, songId, credentialId, 'add');
