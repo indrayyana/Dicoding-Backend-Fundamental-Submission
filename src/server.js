@@ -36,12 +36,17 @@ const collaborations = require('./api/collaborations');
 const CollaborationsService = require('./services/postgres/collaborationsService');
 const CollaborationsValidator = require('./validator/collaborations');
 
+// Exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/producerService');
+const ExportsValidator = require('./validator/exports');
+
 const init = async () => {
   const collaborationsService = new CollaborationsService();
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
-  const playlistsService = new PlaylistsService();
+  const playlistsService = new PlaylistsService(collaborationsService);
   const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
@@ -126,6 +131,13 @@ const init = async () => {
         validator: CollaborationsValidator,
       },
     },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        validator: ExportsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -151,7 +163,7 @@ const init = async () => {
       const newResponse = h.response({
         status: 'error',
         message: 'terjadi kegagalan pada server kami',
-        // error: response.message, // menampilkan pesan error
+        error: response.message, // menampilkan pesan error
       });
       newResponse.code(500);
       return newResponse;
