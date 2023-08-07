@@ -5,7 +5,7 @@ class AlbumsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
-    this.songService = new SongsService();
+    this._songService = new SongsService();
 
     autoBind(this);
   }
@@ -28,7 +28,7 @@ class AlbumsHandler {
   async getAlbumByIdHandler(request) {
     const { id } = request.params;
     const album = await this._service.getAlbumById(id);
-    const songs = await this.songService.getSongsByAlbumId(id);
+    const songs = await this._songService.getSongsByAlbumId(id);
 
     // Gabungkan data album dan data lagu
     album.songs = songs;
