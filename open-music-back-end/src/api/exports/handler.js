@@ -1,10 +1,9 @@
 const autoBind = require('auto-bind');
-const PlaylistsService = require('../../services/postgres/playlistsService');
 
 class ExportsHandler {
-  constructor(exportsService, validator) {
+  constructor(exportsService, playlistsService, validator) {
     this._exportsService = exportsService;
-    this._playlistsService = new PlaylistsService();
+    this._playlistsService = playlistsService;
     this._validator = validator;
 
     autoBind(this);
@@ -15,7 +14,7 @@ class ExportsHandler {
     const { id: userId } = request.auth.credentials.id;
 
     const { playlistId } = request.params;
-    await this._playlistsService.verifyPlaylistOwner(playlistId, userId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     const message = {
       playlistId,

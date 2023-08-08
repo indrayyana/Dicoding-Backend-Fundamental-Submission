@@ -4,8 +4,9 @@ const InvariantError = require('../../exceptions/invariantError');
 const NotFoundError = require('../../exceptions/notFoundError');
 
 class LikesService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async likedAlbums(userId, albumId) {
@@ -40,19 +41,31 @@ class LikesService {
     }
 
     const message = 'Like Album berhasil';
+
+    await this._cacheService.delete(`likes:${userId}`);
     return message;
   }
 
   async getLikes(albumId) {
-    const query = {
-      text: 'SELECT * FROM user_album_likes WHERE album_id = $1',
-      values: [albumId],
-    };
+    try {
+      // mendapatkan likes dari cache
+      const result = await this._cacheService.get(`likes:${albumId}`);
+      return JSON.parse(result);
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan likes dari database
+      const query = {
+        text: 'SELECT * FROM user_album_likes WHERE album_id = $1',
+        values: [albumId],
+      };
 
-    const result = await this._pool.query(query);
-    const likeCount = result.rowCount;
+      const result = await this._pool.query(query);
+      const likeCount = result.rowCount;
 
-    return { likes: likeCount };
+      // likes akan disimpan pada cache sebelum fungsi getLikes dikembalikan
+      await this._cacheService.set(`likes:${albumId}`, JSON.stringify(likeCount));
+
+      return { likes: likeCount };
+    }
   }
 
   async deleteLike(userId, albumId) {
@@ -68,6 +81,8 @@ class LikesService {
     }
 
     const message = 'status like berhasil dihapus';
+
+    await this._cacheService.delete(`likes:${userId}`);
     return message;
   }
 }
