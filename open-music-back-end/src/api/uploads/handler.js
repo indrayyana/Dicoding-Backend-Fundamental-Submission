@@ -1,4 +1,4 @@
-const autoBind = require("auto-bind");
+const autoBind = require('auto-bind');
 
 class UploadsHandler {
   constructor(service, validator, albumsService) {
@@ -10,19 +10,17 @@ class UploadsHandler {
   }
 
   async postUploadImageHandler(request, h) {
-    const { cover } = request.payload;
+    const { data } = request.payload;
     const { id } = request.params;
-    this._validator.validateImageHeaders(cover.hapi.headers);
+    this._validator.validateImageHeaders(data.hapi.headers);
 
     await this._albumsService.getAlbumById(id);
-    const filename = await this._service.writeFile(cover, cover.hapi);
-    await this._albumService.addCoverUrlAlbum(
-      id,
-      `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`
-    );
+    const filename = await this._service.writeFile(data, data.hapi);
+    await this._albumsService.addCoverUrlAlbum(id, `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`);
 
     const response = h.response({
-      status: "success",
+      status: 'success',
+      message: 'Sampul berhasil diunggah',
       data: {
         fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
       },

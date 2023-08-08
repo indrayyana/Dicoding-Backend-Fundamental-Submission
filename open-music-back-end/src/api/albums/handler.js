@@ -30,6 +30,9 @@ class AlbumsHandler {
     const album = await this._service.getAlbumById(id);
     const songs = await this._songsService.getSongsByAlbumId(id);
 
+    album.coverUrl = album.cover; // Menggunakan coverUrl sebagai pengganti cover
+    delete album.cover; // Menghapus properti cover
+
     // Gabungkan data album dan data lagu
     album.songs = songs;
 
