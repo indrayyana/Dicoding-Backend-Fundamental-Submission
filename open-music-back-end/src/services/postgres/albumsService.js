@@ -72,7 +72,7 @@ class AlbumsService {
       values: [dir, id],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rowCount) {
       throw new NotFoundError('album gagal ditambahkan, album tidak ditemukan');
