@@ -42,7 +42,7 @@ class LikesService {
 
     const message = 'Like Album berhasil';
 
-    await this._cacheService.delete(`likes:${userId}`);
+    await this._cacheService.delete(`likes:${albumId}`);
     return message;
   }
 
@@ -50,7 +50,11 @@ class LikesService {
     try {
       // mendapatkan likes dari cache
       const result = await this._cacheService.get(`likes:${albumId}`);
-      return JSON.parse(result);
+      const parsing = JSON.parse(result);
+      return {
+        cache: true,
+        likes: parsing,
+      };
     } catch (error) {
       // bila gagal, diteruskan dengan mendapatkan likes dari database
       const query = {
@@ -64,7 +68,7 @@ class LikesService {
       // likes akan disimpan pada cache sebelum fungsi getLikes dikembalikan
       await this._cacheService.set(`likes:${albumId}`, JSON.stringify(likeCount));
 
-      return { likes: likeCount };
+      return { cache: false, likes: likeCount };
     }
   }
 
@@ -82,7 +86,7 @@ class LikesService {
 
     const message = 'status like berhasil dihapus';
 
-    await this._cacheService.delete(`likes:${userId}`);
+    await this._cacheService.delete(`likes:${albumId}`);
     return message;
   }
 }
