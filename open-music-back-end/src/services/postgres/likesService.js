@@ -3,7 +3,6 @@ const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/invariantError');
 const NotFoundError = require('../../exceptions/notFoundError');
 
-// TODO: Edit English message
 class LikesService {
   constructor() {
     this._pool = new Pool();
@@ -22,8 +21,8 @@ class LikesService {
       return message;
     }
 
-    const message = await this.deleteLike(userId, albumId);
-    return message;
+    // Jika pengguna mencoba menyukai album yang sama lagi, lempar InvariantError
+    throw new InvariantError('Anda sudah menyukai album ini');
   }
 
   async addLike(userId, albumId) {
@@ -40,7 +39,7 @@ class LikesService {
       throw new InvariantError('gagal menyukai album');
     }
 
-    const message = 'Likes Album';
+    const message = 'Like Album berhasil';
     return message;
   }
 
@@ -65,10 +64,10 @@ class LikesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('like status not found');
+      throw new NotFoundError('status like tidak ditemukan');
     }
 
-    const message = 'Likes Album Removed';
+    const message = 'status like berhasil dihapus';
     return message;
   }
 }

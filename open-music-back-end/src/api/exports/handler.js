@@ -15,7 +15,7 @@ class ExportsHandler {
     const { id: userId } = request.auth.credentials.id;
 
     const { playlistId } = request.params;
-    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
+    await this._playlistsService.verifyPlaylistOwner(playlistId, userId);
 
     const message = {
       playlistId,
