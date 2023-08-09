@@ -77,8 +77,6 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('album gagal ditambahkan, album tidak ditemukan');
     }
-
-    // await this._cacheService.delete(`getalbum:${id}`);
   }
 }
 

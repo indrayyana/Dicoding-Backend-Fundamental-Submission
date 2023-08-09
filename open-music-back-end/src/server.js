@@ -55,6 +55,9 @@ const LikesService = require('./services/postgres/likesService');
 // cache
 const CacheService = require('./services/redis/cacheService');
 
+// config
+const config = require('./utils/config');
+
 const init = async () => {
   const cacheService = new CacheService();
   const collaborationsService = new CollaborationsService();
@@ -67,8 +70,8 @@ const init = async () => {
   const likesService = new LikesService(cacheService);
 
   const server = Hapi.server({
-    host: process.env.HOST,
-    port: process.env.PORT,
+    host: config.app.host,
+    port: config.app.port,
     routes: {
       cors: {
         origin: ['*'],
@@ -88,12 +91,12 @@ const init = async () => {
 
   // mendefinisikan strategy autentikasi jwt
   server.auth.strategy('openmusicapp_jwt', 'jwt', {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: config.jwt.accessToken,
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+      maxAgeSec: config.jwt.accessTokenAge,
     },
     validate: (artifacts) => ({
       isValid: true,

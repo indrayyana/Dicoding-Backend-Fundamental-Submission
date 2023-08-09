@@ -35,6 +35,7 @@ class LikesHandler {
         likes,
       },
     });
+
     if (cache) response.header('X-Data-Source', 'cache');
     return response;
   }
