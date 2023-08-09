@@ -5,9 +5,10 @@ const NotFoundError = require('../../exceptions/notFoundError');
 const AuthorizationError = require('../../exceptions/authorizationError');
 
 class PlaylistsService {
-  constructor(collaborationsService) {
+  constructor(collaborationsService, cacheService) {
     this._pool = new Pool();
     this._collaborationsService = collaborationsService;
+    this._cacheService = cacheService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -24,17 +25,34 @@ class PlaylistsService {
       throw new InvariantError('Playlist gagal ditambahkan');
     }
 
+    await this._cacheService.delete(`playlists:${owner}`);
     return result.rows[0].id;
   }
 
-  async getPlaylists(userId) {
-    const query = {
-      text: 'SELECT p.id, p.name, u.username FROM playlists AS p INNER JOIN users AS u ON p.owner = u.id WHERE p.owner = $1 UNION SELECT p.id, p.name, u.username FROM collaborations AS c INNER JOIN playlists AS p ON c.playlist_id = p.id INNER JOIN users u ON p.owner = u.id WHERE c.user_id = $1',
-      values: [userId],
-    };
-    const result = await this._pool.query(query);
+  async getPlaylists(owner) {
+    try {
+      // mendapatkan playlist dari cache
+      const result = await this._cacheService.get(`playlists:${owner}`);
+      const parsing = JSON.parse(result);
+      return {
+        cache: true,
+        playlists: parsing,
+      };
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan playlist dari database
+      const query = {
+        text: 'SELECT p.id, p.name, u.username FROM playlists AS p INNER JOIN users AS u ON p.owner = u.id WHERE p.owner = $1 UNION SELECT p.id, p.name, u.username FROM collaborations AS c INNER JOIN playlists AS p ON c.playlist_id = p.id INNER JOIN users u ON p.owner = u.id WHERE c.user_id = $1',
+        values: [owner],
+      };
 
-    return result.rows;
+      const result = await this._pool.query(query);
+      const playlists = result.rows;
+
+      // playlist akan disimpan pada cache sebelum fungsi getPlaylists dikembalikan
+      await this._cacheService.set(`playlists:${owner}`, JSON.stringify(playlists));
+
+      return { cache: false, playlists };
+    }
   }
 
   async getPlaylistById(playlistId) {
@@ -54,7 +72,7 @@ class PlaylistsService {
 
   async deletePlaylistById(id) {
     const query = {
-      text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
+      text: 'DELETE FROM playlists WHERE id = $1 RETURNING id, owner',
       values: [id],
     };
 
@@ -63,6 +81,9 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
+
+    const { owner } = result.rows[0];
+    await this._cacheService.delete(`playlists:${owner}`);
   }
 
   async addSongToPlaylist(playlistId, songId) {
@@ -77,45 +98,57 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new InvariantError('Musik gagal ditambahkan kedalam playlist');
     }
+
+    await this._cacheService.delete(`playlistSongs:${playlistId}`);
   }
 
   async getPlaylistSongsById(playlistId, userId) {
     await this.verifyPlaylistAccess(playlistId, userId);
 
-    const queryGetPlaylist = {
-      text: `SELECT p.id, p.name, u.username
+    try {
+      // mendapatkan playlist lagu dari cache
+      const result = await this._cacheService.get(`playlistSongs:${playlistId}`);
+      const parsing = JSON.parse(result);
+      return {
+        cache: true,
+        playlist: parsing,
+      };
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan playlist lagu dari database
+      const queryGetPlaylist = {
+        text: `SELECT p.id, p.name, u.username
       FROM playlists p
       INNER JOIN users u
       ON p.owner = u.id
       WHERE p.id = $1`,
-      values: [playlistId],
-    };
-
-    const playlistResult = await this._pool.query(queryGetPlaylist);
-
-    if (!playlistResult.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan');
-    }
-
-    const queryGetSongs = {
-      text: `SELECT s.id, s.title, s.performer
+        values: [playlistId],
+      };
+      const queryGetSongs = {
+        text: `SELECT s.id, s.title, s.performer
       FROM songs s
       INNER JOIN playlist_songs p 
       ON p.song_id = s.id
       WHERE p.playlist_id = $1`,
-      values: [playlistId],
-    };
-    const songsResult = await this._pool.query(queryGetSongs);
+        values: [playlistId],
+      };
 
-    const playlist = playlistResult.rows[0];
-    const result = {
-      id: playlist.id,
-      name: playlist.name,
-      username: playlist.username,
-      songs: songsResult.rows,
-    };
+      const playlistResult = await this._pool.query(queryGetPlaylist);
+      const songsResult = await this._pool.query(queryGetSongs);
 
-    return result;
+      if (!playlistResult.rowCount) {
+        throw new NotFoundError('Playlist tidak ditemukan');
+      }
+
+      const data = playlistResult.rows[0];
+      data.songs = songsResult.rows;
+
+      const result = playlistResult.rows[0];
+
+      // playlist lagu akan disimpan pada cache sebelum fungsi getPlaylistSongsById dikembalikan
+      await this._cacheService.set(`playlistSongs:${playlistId}`, JSON.stringify(result));
+
+      return { cache: false, playlist: result };
+    }
   }
 
   async deleteSongFromPlaylist(playlistId, songId) {
@@ -131,13 +164,25 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new InvariantError('Musik gagal dihapus dari playlist');
     }
+
+    await this._cacheService.delete(`playlistSongs:${playlistId}`);
   }
 
   async getPlaylistActivitiesById(playlistId) {
     await this.getPlaylistById(playlistId);
 
-    const query = {
-      text: `SELECT u.username, s.title, a.action, a.time
+    try {
+      // mendapatkan aktivitas playlist  dari cache
+      const result = await this._cacheService.get(`playlistActivities:${playlistId}`);
+      const parsing = JSON.parse(result);
+      return {
+        cache: true,
+        activities: parsing,
+      };
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan aktivitas playlist dari database
+      const query = {
+        text: `SELECT u.username, s.title, a.action, a.time
       FROM playlist_song_activities a
       INNER JOIN songs s
       ON a.song_id = s.id
@@ -145,11 +190,17 @@ class PlaylistsService {
       ON a.user_id = u.id
       WHERE playlist_id = $1
       ORDER BY a.time ASC`,
-      values: [playlistId],
-    };
+        values: [playlistId],
+      };
 
-    const result = await this._pool.query(query);
-    return result.rows;
+      const result = await this._pool.query(query);
+      const playlistActivies = result.rows;
+
+      // aktivitas playlist akan disimpan pada cache sebelum fungsi dikembalikan
+      await this._cacheService.set(`playlistActivities:${playlistId}`, JSON.stringify(playlistActivies));
+
+      return { cache: false, activities: playlistActivies };
+    }
   }
 
   async addActivity(playlistId, songId, userId, action) {
@@ -167,6 +218,8 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new InvariantError('Gagal menambahkan activity');
     }
+
+    await this._cacheService.delete(`playlistActivities:${playlistId}`);
   }
 
   async verifyPlaylistOwner(id, userId) {

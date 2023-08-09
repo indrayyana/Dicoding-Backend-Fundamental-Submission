@@ -31,15 +31,19 @@ class PlaylistsHandler {
     return response;
   }
 
-  async getPlaylistsHandler(request) {
+  async getPlaylistsHandler(request, h) {
     const { id: credentialId } = request.auth.credentials;
-    const playlists = await this._playlistsService.getPlaylists(credentialId);
-    return {
+    const { cache, playlists } = await this._playlistsService.getPlaylists(credentialId);
+
+    const response = h.response({
       status: 'success',
       data: {
         playlists,
       },
-    };
+    });
+
+    if (cache) response.header('X-Data-Source', 'cache');
+    return response;
   }
 
   async deletePlaylistByIdHandler(request) {
@@ -76,17 +80,20 @@ class PlaylistsHandler {
     return response;
   }
 
-  async getPlaylistSongsByIdHandler(request) {
+  async getPlaylistSongsByIdHandler(request, h) {
     const { id } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    const playlist = await this._playlistsService.getPlaylistSongsById(id, credentialId);
+    const { cache, playlist } = await this._playlistsService.getPlaylistSongsById(id, credentialId);
 
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         playlist,
       },
-    };
+    });
+
+    if (cache) response.header('X-Data-Source', 'cache');
+    return response;
   }
 
   async deletePlaylistSongsByIdHandler(request) {
@@ -106,21 +113,24 @@ class PlaylistsHandler {
     };
   }
 
-  async getPlaylistActivitiesByIdHandler(request) {
+  async getPlaylistActivitiesByIdHandler(request, h) {
     const { id } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
     await this._playlistsService.verifyPlaylistAccess(id, credentialId);
 
-    const activities = await this._playlistsService.getPlaylistActivitiesById(id);
+    const { cache, activities } = await this._playlistsService.getPlaylistActivitiesById(id);
 
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         playlistId: id,
         activities,
       },
-    };
+    });
+
+    if (cache) response.header('X-Data-Source', 'cache');
+    return response;
   }
 }
 
