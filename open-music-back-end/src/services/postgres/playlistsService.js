@@ -46,12 +46,12 @@ class PlaylistsService {
       };
 
       const result = await this._pool.query(query);
-      const playlists = result.rows;
+      const getPlaylists = result.rows;
 
       // playlist akan disimpan pada cache sebelum fungsi getPlaylists dikembalikan
-      await this._cacheService.set(`playlists:${owner}`, JSON.stringify(playlists));
+      await this._cacheService.set(`playlists:${owner}`, JSON.stringify(getPlaylists));
 
-      return { cache: false, playlists };
+      return { cache: false, playlists: getPlaylists };
     }
   }
 

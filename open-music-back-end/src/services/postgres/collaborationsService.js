@@ -22,6 +22,7 @@ class CollaborationsService {
       throw new InvariantError('Kolaborasi gagal ditambahkan');
     }
 
+    await this._cacheService.delete(`playlists:${userId}`);
     await this._cacheService.delete(`playlistSongs:${playlistId}`);
     await this._cacheService.delete(`playlistActivities:${playlistId}`);
 
@@ -40,6 +41,7 @@ class CollaborationsService {
       throw new InvariantError('Kolaborasi gagal dihapus');
     }
 
+    await this._cacheService.delete(`playlists:${userId}`);
     await this._cacheService.delete(`playlistSongs:${playlistId}`);
     await this._cacheService.delete(`playlistActivities:${playlistId}`);
   }
