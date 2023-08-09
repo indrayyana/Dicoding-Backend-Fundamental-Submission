@@ -29,13 +29,15 @@ class SongsHandler {
     return response;
   }
 
-  async getSongsHandler(request) {
+  async getSongsHandler(request, h) {
     const { title = '', performer = '' } = request.query;
-    let songs = await this._service.getSongs(title, performer);
+    const { cache, songs } = await this._service.getSongs(title, performer);
+
+    let filteredSongs = songs;
 
     // Jika 'title' or 'performer' ada, maka filter lagu berdasarkan kondisi pencarian
     if (title || performer) {
-      songs = songs.filter((song) => {
+      filteredSongs = songs.filter((song) => {
         // Filter lagu berdasarkan title dan performer dengan mengabaikan perbedaan kapitalisasi
         const isTitleMatch = song.title.toLowerCase().includes(title.toLowerCase());
         const isPerformerMatch = song.performer.toLowerCase().includes(performer.toLowerCase());
@@ -45,17 +47,20 @@ class SongsHandler {
 
     // Jika title and performer ada, batasi hasil ke 1 lagu, else batasi hasil ke 2 lagu
     if (title && performer) {
-      songs = songs.slice(0, 1);
+      filteredSongs = filteredSongs.slice(0, 1);
     } else {
-      songs = songs.slice(0, 2);
+      filteredSongs = filteredSongs.slice(0, 2);
     }
 
-    return {
+    const response = h.response({
       status: 'success',
       data: {
-        songs,
+        songs: filteredSongs,
       },
-    };
+    });
+
+    if (cache) response.header('X-Data-Source', 'cache');
+    return response;
   }
 
   async getSongByIdHandler(request) {
