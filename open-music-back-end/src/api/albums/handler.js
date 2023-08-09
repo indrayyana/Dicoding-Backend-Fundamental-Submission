@@ -24,23 +24,26 @@ class AlbumsHandler {
     return response;
   }
 
-  async getAlbumByIdHandler(request) {
+  async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const album = await this._albumsService.getAlbumById(id);
-    const songs = await this._songsService.getSongsByAlbumId(id);
+    const { cache, album } = await this._albumsService.getAlbumById(id);
+    const getSongs = await this._songsService.getSongsByAlbumId(id);
 
-    album.coverUrl = album.cover; // Menggunakan coverUrl sebagai pengganti cover
-    delete album.cover; // Menghapus properti cover
-
-    // Gabungkan data album dan data lagu
-    album.songs = songs;
-
-    return {
+    const response = h.response({
       status: 'success',
       data: {
-        album,
+        album: {
+          id: album.id,
+          name: album.name,
+          year: album.year,
+          coverUrl: album.cover,
+          songs: getSongs,
+        },
       },
-    };
+    });
+
+    if (cache) response.header('X-Data-Source', 'cache');
+    return response;
   }
 
   async putAlbumByIdHandler(request) {

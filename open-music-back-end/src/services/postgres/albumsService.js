@@ -4,8 +4,9 @@ const InvariantError = require('../../exceptions/invariantError');
 const NotFoundError = require('../../exceptions/notFoundError');
 
 class AlbumsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addAlbum({ name, year }) {
@@ -22,22 +23,39 @@ class AlbumsService {
       throw new InvariantError('album gagal ditambahkan');
     }
 
+    await this._cacheService.delete(`album:${id}`);
     return result.rows[0].id;
   }
 
   async getAlbumById(id) {
-    const query = {
-      text: 'SELECT * FROM albums WHERE id = $1',
-      values: [id],
-    };
+    try {
+      // mendapatkan album dari cache
+      const result = await this._cacheService.get(`album:${id}`);
+      const parsing = JSON.parse(result);
+      return {
+        cache: true,
+        album: parsing,
+      };
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan album dari database
+      const query = {
+        text: 'SELECT * FROM albums WHERE id = $1',
+        values: [id],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('album tidak ditemukan');
+      if (!result.rowCount) {
+        throw new NotFoundError('album tidak ditemukan');
+      }
+
+      const getAlbum = result.rows[0];
+
+      // album akan disimpan pada cache sebelum fungsi getAlbumById dikembalikan
+      await this._cacheService.set(`album:${id}`, JSON.stringify(getAlbum));
+
+      return { cache: false, album: getAlbum };
     }
-
-    return result.rows[0];
   }
 
   async editAlbumById(id, { name, year }) {
@@ -51,6 +69,8 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
     }
+
+    await this._cacheService.delete(`album:${id}`);
   }
 
   async deleteAlbumById(id) {
@@ -64,6 +84,8 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('album gagal dihapus. Id tidak ditemukan');
     }
+
+    await this._cacheService.delete(`album:${id}`);
   }
 
   async addCoverUrlAlbum(id, dir) {
@@ -77,6 +99,8 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('album gagal ditambahkan, album tidak ditemukan');
     }
+
+    await this._cacheService.delete(`album:${id}`);
   }
 }
 
