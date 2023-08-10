@@ -117,16 +117,16 @@ class PlaylistsService {
       // bila gagal, diteruskan dengan mendapatkan playlist lagu dari database
       const queryGetPlaylist = {
         text: `SELECT p.id, p.name, u.username
-      FROM playlists p
-      INNER JOIN users u
+      FROM playlists AS p
+      INNER JOIN users AS u
       ON p.owner = u.id
       WHERE p.id = $1`,
         values: [playlistId],
       };
       const queryGetSongs = {
         text: `SELECT s.id, s.title, s.performer
-      FROM songs s
-      INNER JOIN playlist_songs p 
+      FROM songs AS s
+      INNER JOIN playlist_songs AS p 
       ON p.song_id = s.id
       WHERE p.playlist_id = $1`,
         values: [playlistId],
@@ -183,10 +183,10 @@ class PlaylistsService {
       // bila gagal, diteruskan dengan mendapatkan aktivitas playlist dari database
       const query = {
         text: `SELECT u.username, s.title, a.action, a.time
-      FROM playlist_song_activities a
-      INNER JOIN songs s
+      FROM playlist_song_activities AS a
+      INNER JOIN songs AS s
       ON a.song_id = s.id
-      INNER JOIN users u
+      INNER JOIN users AS u
       ON a.user_id = u.id
       WHERE playlist_id = $1
       ORDER BY a.time ASC`,
