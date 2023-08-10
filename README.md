@@ -16,6 +16,6 @@ Projek ini adalah submission dari Dicoding untuk kelas Belajar Fundamental Aplik
 ### Rating Submission 2 ⭐⭐⭐⭐⭐ 
 ## [OpenMusic API versi 2](https://github.com/indrayyana/Dicoding-Backend-Fundamental-Submission/tree/versi_2) 
 
-### Rating Submission 3 ⭐⭐⭐⭐⭐
+### Rating Submission 3 ⭐⭐⭐⭐
 ## [OpenMusic API versi 3](https://github.com/indrayyana/Dicoding-Backend-Fundamental-Submission/tree/master/open-music-back-end) <br>[OpenMusic queue consumer](https://github.com/indrayyana/Dicoding-Backend-Fundamental-Submission/tree/master/open-music-queue-consumer) 
 
