@@ -1,6 +1,6 @@
 # 📃 Deskripsi
 
-Projek ini adalah submission dari Dicoding untuk kelas Belajar Fundamental Aplikasi Back-End yang dikirimkan pada tanggal <b>9 Agustus 2023</b>. Kelas ini memiliki total 3 submission yang harus diselesaikan untuk dapat menyelesaikan kelas dan memperoleh sertifikat.
+Projek ini adalah submission dari Dicoding untuk kelas Belajar Fundamental Aplikasi Back-End yang dikirimkan pada tanggal <b>10 Agustus 2023</b>. Kelas ini memiliki total 3 submission yang harus diselesaikan untuk dapat menyelesaikan kelas dan memperoleh sertifikat.
 
 > **_PERINGATAN: Jadikan repo ini sebagai rujukan/referensi._**
 >
