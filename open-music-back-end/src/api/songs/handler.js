@@ -20,6 +20,7 @@ class SongsHandler {
       },
     });
     response.code(201);
+
     return response;
   }
 
@@ -54,12 +55,14 @@ class SongsHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 
   async getSongByIdHandler(request) {
     const { id } = request.params;
     const song = await this._service.getSongById(id);
+
     return {
       status: 'success',
       data: {
@@ -82,7 +85,9 @@ class SongsHandler {
 
   async deleteSongByIdHandler(request) {
     const { id } = request.params;
+
     await this._service.deleteSongById(id);
+
     return {
       status: 'success',
       message: 'Lagu berhasil dihapus',

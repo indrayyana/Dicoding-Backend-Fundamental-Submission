@@ -17,8 +17,10 @@ class LikesService {
 
     const result = await this._pool.query(query);
 
+    // tambahkan like jika like belum tersedia di database
     if (!result.rowCount) {
       const message = await this.addLike(userId, albumId);
+
       return message;
     }
 
@@ -43,6 +45,7 @@ class LikesService {
     const message = 'Like Album berhasil';
 
     await this._cacheService.delete(`likes:${albumId}`);
+
     return message;
   }
 
@@ -51,6 +54,7 @@ class LikesService {
       // mendapatkan likes dari cache
       const result = await this._cacheService.get(`likes:${albumId}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         likes: parsing,
@@ -87,6 +91,7 @@ class LikesService {
     const message = 'status like berhasil dihapus';
 
     await this._cacheService.delete(`likes:${albumId}`);
+
     return message;
   }
 }

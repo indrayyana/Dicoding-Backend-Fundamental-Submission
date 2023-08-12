@@ -26,6 +26,7 @@ class PlaylistsService {
     }
 
     await this._cacheService.delete(`playlists:${owner}`);
+
     return result.rows[0].id;
   }
 
@@ -34,6 +35,7 @@ class PlaylistsService {
       // mendapatkan playlist dari cache
       const result = await this._cacheService.get(`playlists:${owner}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         playlists: parsing,
@@ -109,6 +111,7 @@ class PlaylistsService {
       // mendapatkan playlist lagu dari cache
       const result = await this._cacheService.get(`playlistSongs:${playlistId}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         playlist: parsing,
@@ -116,19 +119,11 @@ class PlaylistsService {
     } catch (error) {
       // bila gagal, diteruskan dengan mendapatkan playlist lagu dari database
       const queryGetPlaylist = {
-        text: `SELECT p.id, p.name, u.username
-      FROM playlists AS p
-      INNER JOIN users AS u
-      ON p.owner = u.id
-      WHERE p.id = $1`,
+        text: 'SELECT p.id, p.name, u.username FROM playlists AS p INNER JOIN users AS u ON p.owner = u.id WHERE p.id = $1',
         values: [playlistId],
       };
       const queryGetSongs = {
-        text: `SELECT s.id, s.title, s.performer
-      FROM songs AS s
-      INNER JOIN playlist_songs AS p 
-      ON p.song_id = s.id
-      WHERE p.playlist_id = $1`,
+        text: 'SELECT s.id, s.title, s.performer FROM songs AS s INNER JOIN playlist_songs AS p ON p.song_id = s.id WHERE p.playlist_id = $1',
         values: [playlistId],
       };
 
@@ -140,6 +135,8 @@ class PlaylistsService {
       }
 
       const data = playlistResult.rows[0];
+
+      // Memunculkan daftar songs di dalam data playlist
       data.songs = songsResult.rows;
 
       const result = playlistResult.rows[0];
@@ -153,9 +150,7 @@ class PlaylistsService {
 
   async deleteSongFromPlaylist(playlistId, songId) {
     const query = {
-      text: `DELETE FROM playlist_songs 
-      WHERE playlist_id = $1 AND song_id = $2
-      RETURNING id`,
+      text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
       values: [playlistId, songId],
     };
 
@@ -175,6 +170,7 @@ class PlaylistsService {
       // mendapatkan aktivitas playlist  dari cache
       const result = await this._cacheService.get(`playlistActivities:${playlistId}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         activities: parsing,
@@ -207,9 +203,7 @@ class PlaylistsService {
     const id = `activity-${nanoid(16)}`;
     const time = new Date().toISOString();
     const query = {
-      text: `INSERT INTO playlist_song_activities
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id`,
+      text: 'INSERT INTO playlist_song_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
       values: [id, playlistId, songId, userId, action, time],
     };
 

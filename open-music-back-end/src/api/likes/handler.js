@@ -20,6 +20,7 @@ class LikesHandler {
       message,
     });
     response.code(201);
+
     return response;
   }
 
@@ -37,6 +38,7 @@ class LikesHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 
@@ -51,6 +53,7 @@ class LikesHandler {
       status: 'success',
       message,
     });
+
     return response;
   }
 }

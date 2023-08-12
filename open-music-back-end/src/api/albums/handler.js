@@ -21,6 +21,7 @@ class AlbumsHandler {
       },
     });
     response.code(201);
+
     return response;
   }
 
@@ -43,6 +44,7 @@ class AlbumsHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 
@@ -60,7 +62,9 @@ class AlbumsHandler {
 
   async deleteAlbumByIdHandler(request) {
     const { id } = request.params;
+
     await this._albumsService.deleteAlbumById(id);
+
     return {
       status: 'success',
       message: 'Album berhasil dihapus',

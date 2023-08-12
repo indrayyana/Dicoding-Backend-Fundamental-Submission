@@ -6,6 +6,9 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 
+// error
+const ClientError = require('./exceptions/clientError');
+
 // albums
 const albums = require('./api/albums');
 const AlbumsService = require('./services/postgres/albumsService');
@@ -15,7 +18,6 @@ const AlbumsValidator = require('./validator/albums');
 const songs = require('./api/songs');
 const SongsService = require('./services/postgres/songsService');
 const SongsValidator = require('./validator/songs');
-const ClientError = require('./exceptions/clientError');
 
 // users
 const users = require('./api/users');
@@ -166,9 +168,9 @@ const init = async () => {
     {
       plugin: uploads,
       options: {
-        service: storageService,
-        validator: UploadsValidator,
+        storageService,
         albumsService,
+        validator: UploadsValidator,
       },
     },
     {

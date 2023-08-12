@@ -2,10 +2,10 @@ const autoBind = require('auto-bind');
 const config = require('../../utils/config');
 
 class UploadsHandler {
-  constructor(service, validator, albumsService) {
-    this._service = service;
-    this._validator = validator;
+  constructor(storageService, albumsService, validator) {
+    this._storageService = storageService;
     this._albumsService = albumsService;
+    this._validator = validator;
 
     autoBind(this);
   }
@@ -16,7 +16,7 @@ class UploadsHandler {
     this._validator.validateImageHeaders(cover.hapi.headers);
 
     await this._albumsService.getAlbumById(id);
-    const filename = await this._service.writeFile(cover, cover.hapi);
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
     await this._albumsService.addCoverUrlAlbum(id, `http://${config.app.host}:${config.app.port}/upload/images/${filename}`);
 
     const response = h.response({
@@ -27,6 +27,7 @@ class UploadsHandler {
       },
     });
     response.code(201);
+
     return response;
   }
 }

@@ -28,6 +28,7 @@ class PlaylistsHandler {
       },
     });
     response.code(201);
+
     return response;
   }
 
@@ -43,6 +44,7 @@ class PlaylistsHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 
@@ -77,6 +79,7 @@ class PlaylistsHandler {
       message: 'Musik berhasil ditambahkan ke dalam playlist',
     });
     response.code(201);
+
     return response;
   }
 
@@ -93,6 +96,7 @@ class PlaylistsHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 
@@ -130,6 +134,7 @@ class PlaylistsHandler {
     });
 
     if (cache) response.header('X-Data-Source', 'cache');
+
     return response;
   }
 }

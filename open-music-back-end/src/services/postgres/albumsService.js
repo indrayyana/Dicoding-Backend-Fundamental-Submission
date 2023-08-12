@@ -24,6 +24,7 @@ class AlbumsService {
     }
 
     await this._cacheService.delete(`album:${id}`);
+
     return result.rows[0].id;
   }
 
@@ -32,6 +33,7 @@ class AlbumsService {
       // mendapatkan album dari cache
       const result = await this._cacheService.get(`album:${id}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         album: parsing,

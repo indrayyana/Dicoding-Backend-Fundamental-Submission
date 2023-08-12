@@ -27,6 +27,7 @@ class SongsService {
     }
 
     await this._cacheService.delete(`songs:${title}-${performer}`);
+
     return result.rows[0].id;
   }
 
@@ -35,6 +36,7 @@ class SongsService {
       // mendapatkan songs dari cache
       const result = await this._cacheService.get(`songs:${title}-${performer}`);
       const parsing = JSON.parse(result);
+
       return {
         cache: true,
         songs: parsing,
