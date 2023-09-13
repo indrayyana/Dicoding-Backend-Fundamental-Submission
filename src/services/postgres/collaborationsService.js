@@ -15,12 +15,12 @@ class CollaborationsService {
       values: [id, playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount, rows } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Kolaborasi gagal ditambahkan');
     }
-    return result.rows[0].id;
+    return rows[0].id;
   }
 
   async deleteCollaboration(playlistId, userId) {
@@ -29,9 +29,9 @@ class CollaborationsService {
       values: [playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Kolaborasi gagal dihapus');
     }
   }
@@ -42,9 +42,9 @@ class CollaborationsService {
       values: [playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Kolaborasi gagal diverifikasi');
     }
   }
