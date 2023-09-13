@@ -15,10 +15,10 @@ class LikesService {
       values: [userId, albumId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
     // tambahkan like jika like belum tersedia di database
-    if (!result.rowCount) {
+    if (!rowCount) {
       const message = await this.addLike(userId, albumId);
 
       return message;
@@ -36,9 +36,9 @@ class LikesService {
       values: [id, userId, albumId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('gagal menyukai album');
     }
 
@@ -66,8 +66,8 @@ class LikesService {
         values: [albumId],
       };
 
-      const result = await this._pool.query(query);
-      const likeCount = result.rowCount;
+      const { rowCount } = await this._pool.query(query);
+      const likeCount = rowCount;
 
       // likes akan disimpan pada cache sebelum fungsi getLikes dikembalikan
       await this._cacheService.set(`likes:${albumId}`, JSON.stringify(likeCount));
@@ -82,9 +82,9 @@ class LikesService {
       values: [userId, albumId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('status like tidak ditemukan');
     }
 
