@@ -42,9 +42,9 @@ class SongsService {
         songs: parsing,
       };
     } catch (error) {
-      // bila gagal, diteruskan dengan mendapatkan songs dari database
+      // bila gagal, diteruskan dengan mendapatkan songs dari database (mengabaikan case-sensitive)
       const query = {
-        text: 'SELECT id, title, performer FROM songs WHERE title LIKE $1 OR performer LIKE $2',
+        text: 'SELECT id, title, performer FROM songs WHERE title ILIKE $1 OR performer ILIKE $2',
         values: [`%${title}%`, `%${performer}%`],
       };
 

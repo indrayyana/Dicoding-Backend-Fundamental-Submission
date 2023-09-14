@@ -34,8 +34,8 @@ class SongsHandler {
     if (title || performer) {
       filteredSongs = songs.filter((song) => {
         // Filter lagu berdasarkan title dan performer dengan mengabaikan perbedaan kapitalisasi
-        const isTitleMatch = song.title.toLowerCase().includes(title.toLowerCase());
-        const isPerformerMatch = song.performer.toLowerCase().includes(performer.toLowerCase());
+        const isTitleMatch = song.title.toLowerCase().includes(title);
+        const isPerformerMatch = song.performer.toLowerCase().includes(performer);
         return isTitleMatch && isPerformerMatch;
       });
     }
